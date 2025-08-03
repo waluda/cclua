@@ -26,8 +26,8 @@ local lines = {
     "Refined Storage",
     "Mekanism Power",
     "Mekanism Machinery",
-    "Ender IO"
-    "Auto-Smeltery"
+    "Ender IO",
+    "Auto-Smeltery",
 }
 
 local startY = math.floor((h - #lines) / 2) + 1

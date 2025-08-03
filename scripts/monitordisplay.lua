@@ -47,7 +47,7 @@ local function centerText(text, y)
 end
 
 -- Write all lines centered
-centerText("REFINED STORAGE", 1)
-centerText("MEKANISM POWER", 2)
-centerText("ENDERIO", 3)
-centerText("MEKANISM MACHINERY", 4)
+centerText("Refined Storage", 1)
+centerText("Mekanism Power", 2)
+centerText("Mekanism Machinery", 3)
+centerText("Ender IO", 4)

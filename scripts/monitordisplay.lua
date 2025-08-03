@@ -27,8 +27,9 @@ local lines = {
     "Mekanism Power",
     "Mekanism Machinery",
     "Ender IO",
-    "Auto-Smeltery"
+    "Auto Smeltery"
 }
+
 
 local startY = math.floor((h - #lines) / 2) + 1
 if startY < 1 then startY = 1 end

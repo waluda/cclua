@@ -11,7 +11,7 @@ local textColor = colors[textColorInput] or colors.white
 -- Ask user for background color (case sensitive)
 print("Enter background color (case sensitive, e.g. black, blue, red). Press Enter for default (blue):")
 local backgroundColorInput = read()
-local backgroundColor = colors[backgroundColorInput] or colors.blue
+local backgroundColor = colors[backgroundColorInput] or colors.black
 
 -- Ask how many lines user wants to input
 local lines = {}
@@ -24,8 +24,11 @@ if numLines > 0 then
         print("Enter line " .. i .. ":")
         lines[i] = read()
     end
-else
+else 
     -- Default lines if user enters 0 or invalid number
+    local backgroundColor = colors.lightBlue
+    local textColor = colors.white
+    local textScale = 1
     lines = {
         "Error: No lines provided.",
         "Please run the script again and provide some text.",   

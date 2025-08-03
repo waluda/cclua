@@ -10,7 +10,7 @@ end
 if not monitor then error("No monitor found!") end
 
 monitor.setTextScale(1)
-monitor.setBackgroundColor(colors.black)
+monitor.setBackgroundColor(colors.blue)
 monitor.setTextColor(colors.white)
 monitor.clear()
 
@@ -27,7 +27,7 @@ local lines = {
     "Mekanism Power",
     "Mekanism Machinery",
     "Ender IO",
-    "Auto-Smeltery",
+    "Auto-Smeltery"
 }
 
 local startY = math.floor((h - #lines) / 2) + 1

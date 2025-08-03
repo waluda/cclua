@@ -1,0 +1,1 @@
+shell.run("monitordisplay.lua")

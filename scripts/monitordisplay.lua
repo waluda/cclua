@@ -1,35 +1,14 @@
-local validSides = {left=true, right=true, top=true, bottom=true, front=true, back=true}
-
--- Try automatic detection first
+-- Detect monitor automatically
 local monitor
 for _, side in ipairs({"top", "bottom", "left", "right", "front", "back"}) do
     if peripheral.getType(side) == "monitor" then
         monitor = peripheral.wrap(side)
-        print("Monitor found automatically on side: " .. side)
+        print("Monitor found on side: " .. side)
         break
     end
 end
 
--- If automatic detection failed, ask user
-if not monitor then
-    while true do
-        print("No monitor found automatically.")
-        print("Please enter the side the monitor is connected to (left, right, top, bottom, front, back):")
-        local side = read():lower()
-
-        if validSides[side] then
-            if peripheral.getType(side) == "monitor" then
-                monitor = peripheral.wrap(side)
-                print("Monitor found on side: " .. side)
-                break
-            else
-                print("No monitor found on that side. Try again.")
-            end
-        else
-            print("Invalid side. Please enter one of: left, right, top, bottom, front, back.")
-        end
-    end
-end
+if not monitor then error("No monitor found!") end
 
 -- Configure the monitor
 monitor.setTextScale(1)
@@ -38,16 +17,29 @@ monitor.setTextColor(colors.white)
 monitor.clear()
 
 local w, h = monitor.getSize()
+print("Monitor size: " .. w .. " x " .. h)
 
--- Function to center text
+-- Function to center text horizontally
 local function centerText(text, y)
     local x = math.floor((w - #text) / 2) + 1
     monitor.setCursorPos(x, y)
     monitor.write(text)
 end
 
--- Write all lines centered
-centerText("Refined Storage", 1)
-centerText("Mekanism Power", 2)
-centerText("Mekanism Machinery", 3)
-centerText("Ender IO", 4)
+local lines = {
+    "REFINED STORAGE",
+    "MEKANISM POWER",
+    "ENDERIO",
+    "MEKANISM MACHINERY"
+}
+
+-- Calculate vertical start position to center the block of text
+local startY = math.floor((h - #lines) / 2) + 1
+
+-- Print each line centered horizontally and vertically
+for i, line in ipairs(lines) do
+    local y = startY + i - 1
+    if y >= 1 and y <= h then
+        centerText(line, y)
+    end
+end

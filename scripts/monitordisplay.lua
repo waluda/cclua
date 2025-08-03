@@ -13,6 +13,25 @@ print("Enter background color (case sensitive, e.g. black, blue, red). Press Ent
 local backgroundColorInput = read()
 local backgroundColor = colors[backgroundColorInput] or colors.blue
 
+-- Ask how many lines user wants to input
+local lines = {}
+print("How many lines do you want to input? Enter a number:")
+local numLinesInput = read()
+local numLines = tonumber(numLinesInput) or 0
+
+if numLines > 0 then
+    for i = 1, numLines do
+        print("Enter line " .. i .. ":")
+        lines[i] = read()
+    end
+else
+    -- Default lines if user enters 0 or invalid number
+    lines = {
+        "Error: No lines provided.",
+        "Please run the script again and provide some text.",   
+    }
+end
+
 -- Detect monitor automatically
 local monitor
 for _, side in ipairs({"top", "bottom", "left", "right", "front", "back"}) do
@@ -36,14 +55,6 @@ local function centerText(text, y)
     monitor.setCursorPos(x, y)
     monitor.write(text)
 end
-
-local lines = {
-    "Refined Storage",
-    "Mekanism Power",
-    "Mekanism Machinery",
-    "Ender IO",
-    "Auto-Smeltery"
-}
 
 local startY = math.floor((h - #lines) / 2) + 1
 if startY < 1 then startY = 1 end

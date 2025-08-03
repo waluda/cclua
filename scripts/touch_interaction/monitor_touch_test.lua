@@ -1,6 +1,6 @@
--- monitor_buttons.lua
+-- monitor_buttons_modern.lua
 
--- Monitor + Redstone Setup
+-- Detect and wrap monitor
 local monitor
 for _, side in ipairs({"top", "bottom", "left", "right", "front", "back"}) do
     if peripheral.getType(side) == "monitor" then
@@ -12,17 +12,18 @@ if not monitor then error("No monitor found!") end
 
 -- Define buttons
 local buttons = {
-    { label = "Lamp (Left)", side = "left", state = false },
-    { label = "Door (Right)", side = "right", state = false },
-    { label = "Alarm (Back)", side = "back", state = false },
+    { label = "Lamp", side = "left", state = false },
+    { label = "Door", side = "right", state = false },
+    { label = "Alarm", side = "back", state = false },
 }
 
--- Button drawing constants
-local buttonWidth = 16
-local buttonHeight = 3
-local padding = 1
+-- Button rendering config
+local buttonWidth = 13
+local buttonHeight = 1
+local paddingY = 1
+local spacing = 1
 
--- Draw buttons
+-- Modern button drawing
 local function drawButtons()
     monitor.setBackgroundColor(colors.black)
     monitor.clear()
@@ -30,22 +31,38 @@ local function drawButtons()
     monitor.setTextScale(1)
 
     local w, h = monitor.getSize()
-    for i, btn in ipairs(buttons) do
-        local x1 = math.floor((w - buttonWidth) / 2)
-        local y1 = (i - 1) * (buttonHeight + padding) + 2
-        local x2 = x1 + buttonWidth - 1
-        local y2 = y1 + buttonHeight - 1
+    local totalHeight = (#buttons * (buttonHeight + spacing)) - spacing
+    local startY = math.floor((h - totalHeight) / 2)
 
-        btn.bounds = {x1=x1, y1=y1, x2=x2, y2=y2}
-        local bg = btn.state and colors.green or colors.red
+    for i, btn in ipairs(buttons) do
+        local x = math.floor((w - buttonWidth) / 2)
+        local y = startY + (i - 1) * (buttonHeight + spacing)
+
+        btn.bounds = {x1 = x, y1 = y, x2 = x + buttonWidth - 1, y2 = y + buttonHeight - 1}
+
+        -- Background (shaded style)
+        local bg = btn.state and colors.green or colors.gray
+        local shadow = colors.black
+        local textColor = colors.white
+
+        -- Main button
         monitor.setBackgroundColor(bg)
-        for y = y1, y2 do
-            monitor.setCursorPos(x1, y)
+        monitor.setCursorPos(x, y)
+        monitor.write((" "):rep(buttonWidth))
+
+        -- Simulate bottom shadow
+        if y + 1 <= h then
+            monitor.setBackgroundColor(shadow)
+            monitor.setCursorPos(x, y + 1)
             monitor.write((" "):rep(buttonWidth))
         end
-        monitor.setCursorPos(x1 + 1, y1 + 1)
-        monitor.setTextColor(colors.white)
-        monitor.write(btn.label .. (btn.state and " ON" or " OFF"))
+
+        -- Text centered
+        local label = btn.label .. (btn.state and " ON" or " OFF")
+        local textX = x + math.floor((buttonWidth - #label) / 2)
+        monitor.setCursorPos(textX, y)
+        monitor.setTextColor(textColor)
+        monitor.write(label)
     end
 end
 
@@ -57,7 +74,7 @@ local function toggleButton(i)
     drawButtons()
 end
 
--- Detect which button was touched
+-- Get button at touched position
 local function getButtonAt(x, y)
     for i, btn in ipairs(buttons) do
         local b = btn.bounds
@@ -68,14 +85,14 @@ local function getButtonAt(x, y)
     return nil
 end
 
--- Initial draw
+-- Draw initial buttons
 drawButtons()
 
--- Event loop
+-- Touch event loop
 while true do
     local event, side, x, y = os.pullEvent("monitor_touch")
-    local index = getButtonAt(x, y)
-    if index then
-        toggleButton(index)
+    local i = getButtonAt(x, y)
+    if i then
+        toggleButton(i)
     end
 end

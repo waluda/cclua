@@ -1,66 +1,74 @@
 -- monitor_client.lua
 
-local monitorSide = "back"
-local modemSide = "top"
-
-local monitor = peripheral.wrap(monitorSide)
-local modem = peripheral.wrap(modemSide)
-
-if not monitor then error("Monitor not found on " .. monitorSide) end
-if not modem then error("Modem not found on " .. modemSide) end
-
-modem.open(1)
-
-print("Monitor client running, waiting for commands...")
-
-local function getColor(colorName)
-    if not colorName then return colors.white end
-    return colors[colorName] or colors.white
+-- Detect modem
+local modemSide
+for _, side in ipairs({"top","bottom","left","right","front","back"}) do
+    if peripheral.getType(side) == "modem" then
+        modemSide = side
+        break
+    end
 end
 
+if not modemSide then
+    error("No modem found!")
+end
+
+rednet.open(modemSide)
+
+-- Detect monitor
+local monitor
+for _, side in ipairs({"top", "bottom", "left", "right", "front", "back"}) do
+    if peripheral.getType(side) == "monitor" then
+        monitor = peripheral.wrap(side)
+        break
+    end
+end
+
+if not monitor then error("No monitor found!") end
+
+-- Function to center and display text
+local function centerText(text, y)
+    local w, _ = monitor.getSize()
+    local x = math.floor((w - #text) / 2) + 1
+    monitor.setCursorPos(x, y)
+    monitor.write(text)
+end
+
+-- Color conversion from string to colors table
+local function getColorByName(name)
+    if not name then return nil end
+    return colors[name] or nil
+end
+
+print("Client running. Waiting for messages...")
+
 while true do
-    local event, side, senderId, message, distance = os.pullEvent("rednet_message")
-    if side == modemSide then
-        if type(message) == "table" then
-            if message.command == "clear" then
-                monitor.clear()
-            elseif message.command == "display" then
-                local lines = message.lines or {"No lines provided."}
-                local textScale = tonumber(message.textScale) or 1
-                local textColor = getColor(message.textColor)
-                local bgColor = getColor(message.bgColor)
+    local id, message, protocol = rednet.receive("monitor")
 
-                monitor.setTextScale(textScale)
-                monitor.setBackgroundColor(bgColor)
-                monitor.setTextColor(textColor)
-                monitor.clear()
+    if type(message) == "table" and message.command == "display" then
+        local lines = message.lines or {}
+        local textScale = tonumber(message.textScale) or 1
+        local textColor = getColorByName(message.textColor) or colors.white
+        local bgColor = getColorByName(message.bgColor) or colors.black
 
-                local w, h = monitor.getSize()
-                local function centerText(text, y)
-                    local x = math.floor((w - #text) / 2) + 1
-                    monitor.setCursorPos(x, y)
-                    monitor.write(text)
-                end
+        monitor.setTextScale(textScale)
+        monitor.setBackgroundColor(bgColor)
+        monitor.setTextColor(textColor)
+        monitor.clear()
 
-                local startY = math.floor((h - #lines) / 2) + 1
-                if startY < 1 then startY = 1 end
+        local _, h = monitor.getSize()
+        local startY = math.floor((h - #lines) / 2) + 1
+        if startY < 1 then startY = 1 end
 
-                for i, line in ipairs(lines) do
-                    local y = startY + i - 1
-                    if y >= 1 and y <= h then
-                        centerText(line, y)
-                    end
-                end
-            else
-                print("Unknown command received.")
+        for i, line in ipairs(lines) do
+            local y = startY + i - 1
+            if y >= 1 and y <= h then
+                centerText(line, y)
             end
-        elseif type(message) == "string" then
-            monitor.setTextScale(1)
-            monitor.setBackgroundColor(colors.black)
-            monitor.setTextColor(colors.white)
-            monitor.clear()
-            monitor.setCursorPos(1,1)
-            monitor.write(message)
         end
+
+    elseif type(message) == "table" and message.command == "clear" then
+        monitor.setBackgroundColor(colors.black)
+        monitor.clear()
     end
 end

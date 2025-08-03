@@ -10,16 +10,14 @@ end
 
 if not monitor then error("No monitor found!") end
 
--- Configure the monitor
 monitor.setTextScale(1)
 monitor.setBackgroundColor(colors.black)
 monitor.setTextColor(colors.white)
 monitor.clear()
 
 local w, h = monitor.getSize()
-print("Monitor size: " .. w .. " x " .. h)
+print("Monitor size detected: width=" .. w .. ", height=" .. h)
 
--- Function to center text horizontally
 local function centerText(text, y)
     local x = math.floor((w - #text) / 2) + 1
     monitor.setCursorPos(x, y)
@@ -33,10 +31,11 @@ local lines = {
     "MEKANISM MACHINERY"
 }
 
--- Calculate vertical start position to center the block of text
 local startY = math.floor((h - #lines) / 2) + 1
+if startY < 1 then startY = 1 end  -- Make sure startY is at least 1
 
--- Print each line centered horizontally and vertically
+print("Starting Y position for vertical centering: " .. startY)
+
 for i, line in ipairs(lines) do
     local y = startY + i - 1
     if y >= 1 and y <= h then

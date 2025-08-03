@@ -1,69 +1,63 @@
--- industrial_panel.lua
+-- industrial_panel.lua for 3x2 monitor (3 blocks wide, 2 blocks high)
 
--- Detect monitor
+-- Auto-detect monitor
 local monitor
-for _, side in ipairs({"top","bottom","left","right","front","back"}) do
+for _, side in ipairs({"top", "bottom", "left", "right", "front", "back"}) do
     if peripheral.getType(side) == "monitor" then
         monitor = peripheral.wrap(side)
         break
     end
 end
-
 if not monitor then error("No monitor found!") end
 
 monitor.setTextScale(1)
-monitor.setBackgroundColor(colors.lightGray)
-monitor.setTextColor(colors.black)
+monitor.setBackgroundColor(colors.gray)
+monitor.setTextColor(colors.white)
 monitor.clear()
 
--- Redstone output config
+-- Button config
 local buttons = {
     { label = "WATER PUMP", side = "left", state = false },
-    { label = "FANS", side = "right", state = false },
-    { label = "ALARM", side = "back", state = false },
+    { label = "VENTILATION", side = "right", state = false },
+    { label = "EMERGENCY", side = "back", state = false }
 }
 
--- Layout config
-local buttonW, buttonH = 19, 3
+local buttonW, buttonH = 35, 5
 local spacingY = 1
 
--- Draw background with border
-local function drawFrame()
-    monitor.setBackgroundColor(colors.gray)
-    local w, h = monitor.getSize()
-    for y = 1, h do
-        monitor.setCursorPos(1, y)
-        monitor.write((" "):rep(w))
-    end
+-- Draw full background
+local w, h = monitor.getSize()
+for y = 1, h do
+    monitor.setCursorPos(1, y)
+    monitor.write((" "):rep(w))
+end
 
-    monitor.setBackgroundColor(colors.lightGray)
-    monitor.setTextColor(colors.black)
-
-    -- Title bar
+-- Draw header
+local function drawHeader()
     monitor.setCursorPos(3, 1)
+    monitor.setTextColor(colors.lightGray)
     monitor.write("<< INDUSTRIAL CONTROL PANEL >>")
 end
 
--- Draw button with label and LED indicator
+-- Draw a single button
 local function drawButton(btn, x, y)
-    local active = btn.state
-    local bg = active and colors.green or colors.red
-    local ledColor = active and colors.lime or colors.red
+    local bg = btn.state and colors.green or colors.red
+    local ledColor = btn.state and colors.lime or colors.red
 
-    -- Button background
+    -- Fill button area
     for dy = 0, buttonH - 1 do
         monitor.setCursorPos(x, y + dy)
         monitor.setBackgroundColor(bg)
         monitor.write((" "):rep(buttonW))
     end
 
-    -- Label
+    -- Write centered label
     local label = btn.label
-    monitor.setCursorPos(x + math.floor((buttonW - #label)/2), y + 1)
+    monitor.setCursorPos(x + math.floor((buttonW - #label) / 2), y + 2)
     monitor.setTextColor(colors.white)
     monitor.write(label)
 
-    -- LED dot (right side)
+    -- LED dot (top-right)
     monitor.setCursorPos(x + buttonW - 2, y)
     monitor.setTextColor(ledColor)
     monitor.write("●")
@@ -71,20 +65,17 @@ end
 
 -- Draw all buttons
 local function drawButtons()
-    drawFrame()
-
-    local w, h = monitor.getSize()
+    drawHeader()
     local startY = 3
-
     for i, btn in ipairs(buttons) do
-        local x = math.floor((w - buttonW) / 2)
+        local x = 3
         local y = startY + (i - 1) * (buttonH + spacingY)
         btn.bounds = {x1 = x, y1 = y, x2 = x + buttonW - 1, y2 = y + buttonH - 1}
         drawButton(btn, x, y)
     end
 end
 
--- Check for button click
+-- Check which button was pressed
 local function getButtonAt(x, y)
     for i, btn in ipairs(buttons) do
         local b = btn.bounds
@@ -95,7 +86,7 @@ local function getButtonAt(x, y)
     return nil
 end
 
--- Toggle redstone and update UI
+-- Toggle redstone and refresh UI
 local function toggleButton(i)
     local btn = buttons[i]
     btn.state = not btn.state
@@ -103,14 +94,12 @@ local function toggleButton(i)
     drawButtons()
 end
 
--- Init UI
+-- Initialize UI
 drawButtons()
 
--- Touch handling
+-- Event loop
 while true do
     local event, side, x, y = os.pullEvent("monitor_touch")
     local i = getButtonAt(x, y)
-    if i then
-        toggleButton(i)
-    end
+    if i then toggleButton(i) end
 end
